@@ -119,6 +119,12 @@ def test_output_name_normalization(tmp_path: Path) -> None:
     assert normalized_output_path(tmp_path, "result.PDF").name == "result.PDF"
     with pytest.raises(PdfMergeError):
         normalized_output_path(tmp_path, "../escape.pdf")
+    with pytest.raises(PdfMergeError):
+        normalized_output_path(tmp_path, "bad:name.pdf")
+    with pytest.raises(PdfMergeError):
+        normalized_output_path(tmp_path, "CON.pdf")
+    with pytest.raises(PdfMergeError, match="output_directory_missing"):
+        normalized_output_path("", "result.pdf")
 
 
 def test_single_file_is_rejected(tmp_path: Path) -> None:

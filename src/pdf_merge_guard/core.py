@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import tempfile
 from dataclasses import dataclass
 from enum import Enum
@@ -50,10 +51,20 @@ ProgressCallback = Callable[[int, int, Path], None]
 
 
 def normalized_output_path(directory: str | Path, filename: str) -> Path:
+    if not str(directory).strip():
+        raise PdfMergeError("output_directory_missing")
     clean_name = filename.strip()
     if not clean_name:
         raise PdfMergeError("output_name_empty")
-    if Path(clean_name).name != clean_name or clean_name in {".", ".."}:
+    stem = Path(clean_name).stem.upper()
+    reserved = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
+    if (
+        Path(clean_name).name != clean_name
+        or clean_name in {".", ".."}
+        or re.search(r'[<>:"/\\|?*]', clean_name)
+        or clean_name.endswith((" ", "."))
+        or stem in reserved
+    ):
         raise PdfMergeError("output_name_invalid")
     if not clean_name.lower().endswith(".pdf"):
         clean_name += ".pdf"
