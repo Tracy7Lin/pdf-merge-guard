@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdf-merge-guard"
+version = "1.0.0"
+description = "Merge PDFs without mixing documents across duplex sheets."
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "PySide6==6.8.0.1",
+  "pypdf==5.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.4",
+  "pytest-qt==4.4.0",
+  "pyinstaller==6.11.1",
+]
+
+[project.gui-scripts]
+pdf-merge-guard = "pdf_merge_guard.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+
