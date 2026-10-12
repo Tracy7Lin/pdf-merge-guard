@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from PySide6.QtCore import QSettings, Qt
+from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QApplication, QMessageBox
 from pypdf import PdfWriter
 
@@ -72,4 +73,23 @@ def test_language_is_persisted(tmp_path: Path) -> None:
     assert reopened.language == "en_US"
     assert reopened.merge_button.text() == "Merge PDFs"
     reopened.close()
+
+
+def test_close_is_blocked_while_merge_is_running(tmp_path: Path, monkeypatch) -> None:
+    app()
+    window = MainWindow(settings(tmp_path))
+    monkeypatch.setattr(QMessageBox, "information", lambda *args: QMessageBox.Ok)
+
+    class RunningThread:
+        @staticmethod
+        def isRunning() -> bool:
+            return True
+
+    window.thread = RunningThread()  # type: ignore[assignment]
+    event = QCloseEvent()
+    window.closeEvent(event)
+
+    assert not event.isAccepted()
+    window.thread = None
+    window.close()
 

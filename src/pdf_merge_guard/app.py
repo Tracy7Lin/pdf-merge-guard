@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import QEvent, QObject, QSettings, QSize, Qt, QThread, Signal, Slot
-from PySide6.QtGui import QFont, QFontDatabase
+from PySide6.QtGui import QCloseEvent, QFont, QFontDatabase
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -463,6 +463,17 @@ class MainWindow(QMainWindow):
             "output_directory_missing", "output_permission_denied", "output_write_failed",
             "output_name_empty", "output_name_invalid",
         } else self.tr_key("unknown_error")
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        if self.thread is not None and self.thread.isRunning():
+            QMessageBox.information(
+                self,
+                self.tr_key("merge_in_progress"),
+                self.tr_key("close_while_working"),
+            )
+            event.ignore()
+            return
+        event.accept()
 
 
 STYLESHEET = """
